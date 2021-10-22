@@ -1,19 +1,82 @@
 #* 
-#* COMPLETACION DE DATOS DE PRECIPITACIONES
-#* PLATAFORMA ANDREA - ANA
+#* COMPLETACION DE DATOS DE PRECIPITACIONES DIARIAS
+#* PLATAFORMA: ANDREA - ANA
 #* 
 #* Completacion de datos hidrologicos
 #* @autor: Kevin Traverso
 #* 
 
-# Instalacion de librerias ------------------------------------------------
+# Instalacion de librerias
 
-install.packages()
+# install.packages("cutoffR")
+# install.packages("xts")
 
+# Cargando los paquetes
 
+library(cutoffR)
+library(xts)
 
-# Ingreso de datos --------------------------------------------------------
+# Ingreso de datos
 
+Data_diaria <- read.csv("./Data/2_Data_anual.csv",
+                        header = T)
 
+# Funcion de transformacion de datos xts
 
+Data_xts <- function(Data_diaria){
+  dates <- as.Date(
+    x = Data_diaria[,1],
+    format = "%Y-%m-%d"
+    )
+  pcp <- Data_diaria[,-1]
+  Data_dxts <- xts::xts(
+    x = pcp, 
+    order.by = dates
+    )
+  return(Data_dxts)
+}
+
+# Transformado datos en formato xts
+
+Datos_xts <- Data_xts(Data_diaria)
+
+# Graficando histogramas
+xyplot(x = Datos_xts, 
+       main = "Histograma de precipitaciones",
+       xlab = "Fecha", 
+       ylab = "Pcp[mm/dia]")
+
+# Funcion de completacion cutoff
+
+completa_diarios <- function(Datos_xts){
+  Datos_dtf <- data.frame(
+    Datos_xts, 
+    date = index(Datos_xts)
+    )
+  
+  Completa_datos <- cutoff(
+    data = Datos_dtf, 
+    method = "correlation", 
+    corr = "spearman",
+    cutoff = 0.75
+    )
+  
+  Datos_comp_xts <- as.xts(
+    Completa_datos,
+    order.by = index(
+      Datos_xts
+      )
+    )
+  
+  return(Datos_comp_xts)
+}
+
+Datos_comp <- completa_diarios(Datos_xts)
+
+# Graficando los datos completos
+xyplot(x = Datos_comp, col = "red", 
+       main = "Histograma con informacion completa",
+       xlab = "Fecha", 
+       ylab = "Pcp[mm/dia]") +
+  xyplot(x = Datos_xts)
 
