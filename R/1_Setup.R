@@ -12,6 +12,7 @@
 # install.packages("xts")
 # install.packages("latticeExtra")
 # install.packages("zoo")
+# install.packages("corrplot")
 
 # Cargando los paquetes
 
@@ -19,10 +20,11 @@ library(cutoffR)
 library(xts)
 library(latticeExtra)
 library(zoo)
+library(corrplot)
 
 # Ingreso de datos
 
-Data_pcp <- read.csv("./Data/2_Data_anual.csv",
+Data_pcp <- read.csv("./Data/3_data_mensual.csv",
                         header = T)
 
 # Funcion de transformacion de datos xts
@@ -69,10 +71,11 @@ completa_datos <- function(Datos_xts){
     corr = "spearman",
     cutoff = 0.75
     )
-
+  
   Datos_comp_xts <- xts::xts(
     x = Completa_datos, 
-    order.by = index(Datos_xts))
+    order.by = index(Datos_xts)
+    )
   
   return(Datos_comp_xts)
   
@@ -88,4 +91,35 @@ xyplot(x = Datos_comp,
        xlab = "Fecha", 
        ylab = "Pcp[mm/dia]") +
   xyplot(x = Datos_xts)
+
+# Analisis de correlacion cruzada de datos completados
+
+res <- cor(Datos_comp)
+
+# Grafico 1
+corrplot(res,  order = 'AOE', 
+         type = 'upper',
+         method = 'number',
+         diag = T, 
+         tl.pos = 'd')
+corrplot(res,
+         add = TRUE,
+         type = 'lower',
+         method = 'ellipse', 
+         order = 'AOE',
+         diag = FALSE,
+         tl.pos = 'n',
+         cl.pos = 'n')
+
+# Grafico 2
+testRes = cor.mtest(Datos_comp, conf.level = 0.90)
+corrplot(res,
+         p.mat = testRes$p,
+         method = 'circle',
+         type = 'lower',
+         insig='blank',
+         addCoef.col = 'black',
+         number.cex = 0.8,
+         order = 'AOE', 
+         diag = FALSE)
 
