@@ -10,37 +10,45 @@
 
 # install.packages("cutoffR")
 # install.packages("xts")
+# install.packages("latticeExtra")
+# install.packages("zoo")
 
 # Cargando los paquetes
 
 library(cutoffR)
 library(xts)
+library(latticeExtra)
+library(zoo)
 
 # Ingreso de datos
 
-Data_diaria <- read.csv("./Data/2_Data_anual.csv",
+Data_pcp <- read.csv("./Data/2_Data_anual.csv",
                         header = T)
 
 # Funcion de transformacion de datos xts
 
-Data_xts <- function(Data_diaria){
+Data_xts <- function(Data_pcp){
+  
   dates <- as.Date(
-    x = Data_diaria[,1],
+    x = Data_pcp[,1],
     format = "%Y-%m-%d"
     )
-  pcp <- Data_diaria[,-1]
+  
   Data_dxts <- xts::xts(
-    x = pcp, 
+    x = Data_pcp[,-1], 
     order.by = dates
     )
+  
   return(Data_dxts)
+  
 }
 
 # Transformado datos en formato xts
 
-Datos_xts <- Data_xts(Data_diaria)
+Datos_xts <- Data_xts(Data_pcp)
 
 # Graficando histogramas
+
 xyplot(x = Datos_xts, 
        main = "Histograma de precipitaciones",
        xlab = "Fecha", 
@@ -48,7 +56,8 @@ xyplot(x = Datos_xts,
 
 # Funcion de completacion cutoff
 
-completa_diarios <- function(Datos_xts){
+completa_datos <- function(Datos_xts){
+  
   Datos_dtf <- data.frame(
     Datos_xts, 
     date = index(Datos_xts)
@@ -60,21 +69,21 @@ completa_diarios <- function(Datos_xts){
     corr = "spearman",
     cutoff = 0.75
     )
-  
-  Datos_comp_xts <- as.xts(
-    Completa_datos,
-    order.by = index(
-      Datos_xts
-      )
-    )
+
+  Datos_comp_xts <- xts::xts(
+    x = Completa_datos, 
+    order.by = index(Datos_xts))
   
   return(Datos_comp_xts)
+  
 }
 
-Datos_comp <- completa_diarios(Datos_xts)
+Datos_comp <- completa_datos(Datos_xts)
 
 # Graficando los datos completos
-xyplot(x = Datos_comp, col = "red", 
+
+xyplot(x = Datos_comp, 
+       col = "red", 
        main = "Histograma con informacion completa",
        xlab = "Fecha", 
        ylab = "Pcp[mm/dia]") +
