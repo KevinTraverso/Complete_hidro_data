@@ -1,10 +1,13 @@
-#* 
+#* **********************************************************************
+#*
 #* COMPLETACION DE DATOS DE PRECIPITACIONES DIARIAS
 #* PLATAFORMA: ANDREA - ANA
 #* 
-#* Completacion de datos hidrologicos
+#* Completacion de datos pluviometricos, diarios, mensuales y
+#* anuales
 #* @autor: Kevin Traverso
 #* 
+#* **********************************************************************
 
 # Instalacion de librerias
 
@@ -14,7 +17,7 @@
 # install.packages("zoo")
 # install.packages("corrplot")
 
-# Cargando los paquetes
+# Cargando los paquetes *************************************************
 
 library(cutoffR)
 library(xts)
@@ -22,12 +25,12 @@ library(latticeExtra)
 library(zoo)
 library(corrplot)
 
-# Ingreso de datos
+# Ingreso de datos ******************************************************
 
-Data_pcp <- read.csv("./Data/3_data_mensual.csv",
+Data_pcp <- read.csv("./Data/1_Data_diaria.csv",
                         header = T)
 
-# Funcion de transformacion de datos xts
+# Funcion de transformacion de datos xts *********************************
 
 Data_xts <- function(Data_pcp){
   
@@ -45,18 +48,31 @@ Data_xts <- function(Data_pcp){
   
 }
 
-# Transformado datos en formato xts
+# Transformado datos en formato xts **************************************
 
 Datos_xts <- Data_xts(Data_pcp)
 
 # Graficando histogramas
 
 xyplot(x = Datos_xts, 
-       main = "Histograma de precipitaciones",
+       main = "Serie de tiempo de precipitaciones",
        xlab = "Fecha", 
-       ylab = "Pcp[mm/dia]")
+       ylab = "Precipitacion[mm]")
 
-# Funcion de completacion cutoff
+# Funcion de completacion cutoff *****************************************
+# Seleccion de metodo
+# se recomienda correlation
+method_a <- data.frame("correlation", "number", "penalty")
+method_a1 <- method_a$X.correlation.
+
+# Seleccion de corr "pearson", "spearman" y "kendall"
+# se recomienda spearman
+corr_a <- data.frame("pearson", "spearman", "kendall")
+corr_a1 <- corr_a$X.spearman.
+
+# Seleccion de valor cutoff
+# se recomienda un valor de 0.75
+cutoff_a <- 0.75
 
 completa_datos <- function(Datos_xts){
   
@@ -67,9 +83,9 @@ completa_datos <- function(Datos_xts){
   
   Completa_datos <- cutoff(
     data = Datos_dtf, 
-    method = "correlation", 
-    corr = "spearman",
-    cutoff = 0.75
+    method = method_a1, 
+    corr = corr_a1,
+    cutoff = cutoff_a
     )
   
   Datos_comp_xts <- xts::xts(
@@ -83,7 +99,7 @@ completa_datos <- function(Datos_xts){
 
 Datos_comp <- completa_datos(Datos_xts)
 
-# Graficando los datos completos
+# Graficando los datos completos ****************************************
 
 xyplot(x = Datos_comp, 
        col = "red", 
@@ -92,12 +108,13 @@ xyplot(x = Datos_comp,
        ylab = "Pcp[mm/dia]") +
   xyplot(x = Datos_xts)
 
-# Analisis de correlacion cruzada de datos completados
+# Analisis de correlacion cruzada de datos completados ******************
 
 res <- cor(Datos_comp)
 
 # Grafico 1
-corrplot(res,  order = 'AOE', 
+corrplot(res,  
+         order = 'AOE', 
          type = 'upper',
          method = 'number',
          diag = T, 
@@ -113,6 +130,7 @@ corrplot(res,
 
 # Grafico 2
 testRes = cor.mtest(Datos_comp, conf.level = 0.90)
+
 corrplot(res,
          p.mat = testRes$p,
          method = 'circle',
