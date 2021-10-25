@@ -27,7 +27,7 @@ library(corrplot)
 
 # Ingreso de datos ******************************************************
 
-Data_pcp <- read.csv("./Data/1_Data_diaria.csv",
+Data_pcp <- read.csv("./Data/3_UH_Ramis.csv",
                         header = T)
 
 # Funcion de transformacion de datos xts *********************************
@@ -103,41 +103,88 @@ Datos_comp <- completa_datos(Datos_xts)
 
 xyplot(x = Datos_comp, 
        col = "red", 
-       main = "Histograma con informacion completa",
+       main = "Serie de teimpo con informacion completa",
        xlab = "Fecha", 
        ylab = "Pcp[mm/dia]") +
   xyplot(x = Datos_xts)
 
 # Analisis de correlacion cruzada de datos completados ******************
 
-res <- cor(Datos_comp)
+corr1 <- function(Datos_comp){
+  res <- cor(Datos_comp)
+  
+  a1 <- corrplot(res,  
+                 order = 'AOE', 
+                 type = 'upper',
+                 method = 'number',
+                 diag = T, 
+                 tl.pos = 'd')
+  
+  a2 <- corrplot(res,
+                 add = TRUE,
+                 type = 'lower',
+                 method = 'ellipse', 
+                 order = 'AOE',
+                 diag = FALSE,
+                 tl.pos = 'n',
+                 cl.pos = 'n')
+  coor <- list(a1,a2)
+  return(coor)
+  
+}
 
-# Grafico 1
-corrplot(res,  
-         order = 'AOE', 
-         type = 'upper',
-         method = 'number',
-         diag = T, 
-         tl.pos = 'd')
-corrplot(res,
-         add = TRUE,
-         type = 'lower',
-         method = 'ellipse', 
-         order = 'AOE',
-         diag = FALSE,
-         tl.pos = 'n',
-         cl.pos = 'n')
+coor_pcp <- corr1(Datos_comp = Datos_comp)
+
+# res <- cor(Datos_comp)
+# 
+# # Grafico 1
+# a1 <- corrplot(res,  
+#          order = 'AOE', 
+#          type = 'upper',
+#          method = 'number',
+#          diag = T, 
+#          tl.pos = 'd')
+# a2 <- corrplot(res,
+#          add = TRUE,
+#          type = 'lower',
+#          method = 'ellipse', 
+#          order = 'AOE',
+#          diag = FALSE,
+#          tl.pos = 'n',
+#          cl.pos = 'n')
+# 
+# correlatcion <- list(a1,a2)
 
 # Grafico 2
-testRes = cor.mtest(Datos_comp, conf.level = 0.90)
+corr2 <- function(Datos_comp){
+  
+  testRes = cor.mtest(Datos_comp, conf.level = 0.90)
+  
+  a1 <- corrplot(res,
+                 p.mat = testRes$p,
+                 method = 'circle',
+                 type = 'lower',
+                 insig='blank',
+                 addCoef.col = 'black',
+                 number.cex = 0.8,
+                 order = 'AOE', 
+                 diag = FALSE)
+  
+  a2 <- list(a1)
+  
+  return(a2)
+}
 
-corrplot(res,
-         p.mat = testRes$p,
-         method = 'circle',
-         type = 'lower',
-         insig='blank',
-         addCoef.col = 'black',
-         number.cex = 0.8,
-         order = 'AOE', 
-         diag = FALSE)
+corr2_pcp <- corr2(Datos_comp = Datos_comp)
+
+# testRes = cor.mtest(Datos_comp, conf.level = 0.90)
+# a1 <- corrplot(res,
+#          p.mat = testRes$p,
+#          method = 'circle',
+#          type = 'lower',
+#          insig='blank',
+#          addCoef.col = 'black',
+#          number.cex = 0.8,
+#          order = 'AOE', 
+#          diag = FALSE)
 
