@@ -126,6 +126,13 @@ CompletarDatos_cutoff <- function(
   PeriodoInicio, PeriodoFin,
   Metodo, TipoC, cutoff_v
   
+  # Datos = Data_dxt1
+  # PeriodoInicio = "1995-01-01"
+  # PeriodoFin = "2017-12-31"
+  # Metodo = "correlation"
+  # TipoC = "spearman"
+  # cutoff_v = 0.75
+  
   ){
   
   Datos_xts <- window(
@@ -158,9 +165,10 @@ CompletarDatos_cutoff <- function(
   )
   
   return(Datos_comp)
-
+  
 }
 
+# Aplicacion de la funcion completacion
 Datos_comp <- CompletarDatos_cutoff(
   Datos = Data_dxt1,
   PeriodoInicio = "1995-01-01",
@@ -169,6 +177,44 @@ Datos_comp <- CompletarDatos_cutoff(
   TipoC = "spearman",
   cutoff_v = 0.75
   )
+
+tomatrix <- function(Datos_comp){
+ 
+  m1 <- Datos_comp[[2]]
+  m2 <- Datos_comp[[3]]
+
+  m1_a <- list()
+  m2_a <- list()
+
+  for (i in 1:length(colnames(m1))) {
+    
+    m1_a[[i]] <- data.frame(
+      t(matrix(round(m1[,i], digits=2),
+               nrow=12)),
+      row.names = unique(format(index(m1[,i]),
+                                format = "%Y"))
+      )
+    
+    colnames(m1_a[[i]]) <- month.abb
+    
+  }
+  
+  for (i in 1:length(colnames(m2))) {
+    
+    m2_a[[i]] <- data.frame(
+      t(matrix(round(m2[,i], digits=2),
+               nrow=12)),
+      row.names = unique(format(index(m2[,i]),
+                                format = "%Y"))
+    )
+    
+    colnames(m2_a[[i]]) <- month.abb
+    
+  }
+  return(list(m1_a, m2_a))
+}
+  
+Resultados_mtx <- tomatrix(Datos_comp = Datos_comp)
 
 # completa_datos <- function(Datos_xts){
 #   
