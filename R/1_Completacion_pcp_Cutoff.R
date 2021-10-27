@@ -125,14 +125,7 @@ CompletarDatos_cutoff <- function(
   Datos, 
   PeriodoInicio, PeriodoFin,
   Metodo, TipoC, cutoff_v
-  
-  # Datos = Data_dxt1
-  # PeriodoInicio = "1995-01-01"
-  # PeriodoFin = "2017-12-31"
-  # Metodo = "correlation"
-  # TipoC = "spearman"
-  # cutoff_v = 0.75
-  
+
   ){
   
   Datos_xts <- window(
@@ -195,12 +188,6 @@ tomatrix <- function(Datos_comp){
                                 format = "%Y"))
       )
     
-    colnames(m1_a[[i]]) <- month.abb
-    
-  }
-  
-  for (i in 1:length(colnames(m2))) {
-    
     m2_a[[i]] <- data.frame(
       t(matrix(round(m2[,i], digits=2),
                nrow=12)),
@@ -208,10 +195,13 @@ tomatrix <- function(Datos_comp){
                                 format = "%Y"))
     )
     
+    colnames(m1_a[[i]]) <- month.abb
     colnames(m2_a[[i]]) <- month.abb
     
   }
+  
   return(list(m1_a, m2_a))
+  
 }
   
 Resultados_mtx <- tomatrix(Datos_comp = Datos_comp)
