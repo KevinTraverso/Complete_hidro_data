@@ -16,7 +16,7 @@
 # install.packages("latticeExtra")
 # install.packages("zoo")
 # install.packages("corrplot")
-# install.packages("jsonlite")
+# install.packages("jsonify")
 
 # Cargando los paquetes *************************************************
 
@@ -25,7 +25,10 @@ library(xts)
 library(latticeExtra)
 library(zoo)
 library(corrplot)
-library(jsonlite)
+library(jsonify)
+library(dplyr)
+library(tidyr)
+# library(tidyverse)
 
 # Ingreso de datos ******************************************************
 
@@ -33,12 +36,20 @@ library(jsonlite)
 #                         header = T)
 
 # Lectura de datos en formato JSON
-Data_pcp <- fromJSON(txt = "./Data_json/SerieMensual.json")
-cnames <- c("Est1", "Est2", "Est3")
+Data_pcp <- jsonify::from_json(json = "./Data_json/Serie4EstacionesIlavePrueba.json")
+# cnames <- c("Est1", "Est2", "Est3")
 
 # Funcion de transformacion de datos xts *********************************
 
 Data_xts <- function(Data_pcp, temp){
+  
+  cnames <- data.frame()
+  
+  for (i in 1:length(Data_pcp)) {
+    
+    cnames[1,i] <- paste0("Est_", i)
+    
+  }
   
   Data_dxts <- list()
   
@@ -152,7 +163,8 @@ CompletarDatos_cutoff <- function(
   )
   
   Datos_comp <- list(
-    index(Datos_comp_xts),
+    format(as.Date(as.character(index(Datos_comp_xts)),
+                   "%Y-%m-%d"), "%b%Y"),
     Datos_xts,
     Datos_comp_xts
   )
@@ -164,12 +176,14 @@ CompletarDatos_cutoff <- function(
 # Aplicacion de la funcion completacion
 Datos_comp <- CompletarDatos_cutoff(
   Datos = Data_dxt1,
-  PeriodoInicio = "1995-01-01",
+  PeriodoInicio = "1960-01-01",
   PeriodoFin = "2017-12-31",
   Metodo = "correlation",
   TipoC = "spearman",
   cutoff_v = 0.75
   )
+
+Datos_comp
 
 tomatrix <- function(Datos_comp){
  
@@ -182,6 +196,8 @@ tomatrix <- function(Datos_comp){
   for (i in 1:length(colnames(m1))) {
     
     m1_a[[i]] <- data.frame(
+      Year=unique(format(index(m1[,i]),
+                         format = "%Y")),
       t(matrix(round(m1[,i], digits=2),
                nrow=12)),
       row.names = unique(format(index(m1[,i]),
@@ -189,18 +205,51 @@ tomatrix <- function(Datos_comp){
       )
     
     m2_a[[i]] <- data.frame(
+      Year=unique(format(index(m2[,i]),
+                         format = "%Y")),
       t(matrix(round(m2[,i], digits=2),
                nrow=12)),
       row.names = unique(format(index(m2[,i]),
                                 format = "%Y"))
     )
     
-    colnames(m1_a[[i]]) <- month.abb
-    colnames(m2_a[[i]]) <- month.abb
+    colnames(m1_a[[i]]) <- c("year", month.abb)
+    colnames(m2_a[[i]]) <- c("year", month.abb)
     
   }
   
-  return(list(m1_a, m2_a))
+  m3 <- list()
+  
+  for (i in 1:length(colnames(m1))) {
+    m3[[i]] <- data.frame(
+      Year=unique(format(index(m2[,i]),
+                         format = "%Y")),
+      na_if(round(m2_a[[i]][-1] - m1_a[[i]][-1] %>%
+                        mutate_all(funs(replace_na(.,-0.001))),3), 
+                0.000))
+  }
+  
+  m4 <- list()
+
+  for (i in 1:length(colnames(m1))) {
+    
+    Data_pcp1 <- m3[[i]]
+    
+    a <- as.vector(
+      (as.matrix(Data_pcp1[,2:13]))
+    )
+    y <- seq.Date(
+      as.Date(paste0(Data_pcp1[1,1], "-01", "-01")),
+      as.Date(paste0(Data_pcp1[length(Data_pcp1[,1]),1],
+                     "-12", "-31" )), by = "month"
+    )
+    m4[[i]] <- xts::xts(
+      x = a,
+      order.by = y
+    )
+  }
+  
+  return(list(m1_a, m2_a, m3, m4))
   
 }
   
@@ -237,12 +286,12 @@ Resultados_mtx <- tomatrix(Datos_comp = Datos_comp)
 
 # Graficando los datos completos ****************************************
 
-xyplot(x = Datos_comp, 
+xyplot(x = Datos_comp[[2]], 
        col = "red", 
        main = "Serie de teimpo con informacion completa",
        xlab = "Fecha", 
        ylab = "Pcp[mm/dia]") +
-  xyplot(x = Data_dxt2)
+  xyplot(x = Datos_comp[[3]])
 
 # Analisis de correlacion cruzada de datos completados ******************
 
@@ -269,7 +318,7 @@ corr1 <- function(Datos_comp){
   
 }
 
-coor_pcp <- corr1(Datos_comp = Datos_comp)
+coor_pcp <- corr1(Datos_comp = Datos_comp[[3]])
 
 # res <- cor(Datos_comp)
 # 
@@ -311,7 +360,7 @@ corr2 <- function(Datos_comp){
   return(a2)
 }
 
-corr2_pcp <- corr2(Datos_comp = Datos_comp)
+corr2_pcp <- corr2(Datos_comp = Datos_comp[[3]])
 
 # testRes = cor.mtest(Datos_comp, conf.level = 0.90)
 # a1 <- corrplot(res,
