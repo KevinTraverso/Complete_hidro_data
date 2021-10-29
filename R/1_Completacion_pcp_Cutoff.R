@@ -17,6 +17,8 @@
 # install.packages("zoo")
 # install.packages("corrplot")
 # install.packages("jsonify")
+# install.packages("dplyr")
+# install.packages("tidyr")
 
 # Cargando los paquetes *************************************************
 
@@ -28,7 +30,6 @@ library(corrplot)
 library(jsonify)
 library(dplyr)
 library(tidyr)
-# library(tidyverse)
 
 # Ingreso de datos ******************************************************
 
@@ -239,8 +240,8 @@ tomatrix <- function(Datos_comp){
       (as.matrix(Data_pcp1[,2:13]))
     )
     y <- seq.Date(
-      as.Date(paste0(Data_pcp1[1,1], "-01", "-01")),
-      as.Date(paste0(Data_pcp1[length(Data_pcp1[,1]),1],
+      as.Date(paste0(Data_pcp1[1, 1], "-01", "-01")),
+      as.Date(paste0(Data_pcp1[length(Data_pcp1[, 1]), 1],
                      "-12", "-31" )), by = "month"
     )
     m4[[i]] <- xts::xts(
@@ -372,4 +373,3 @@ corr2_pcp <- corr2(Datos_comp = Datos_comp[[3]])
 #          number.cex = 0.8,
 #          order = 'AOE', 
 #          diag = FALSE)
-
