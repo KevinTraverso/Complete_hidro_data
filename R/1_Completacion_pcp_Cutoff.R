@@ -37,8 +37,13 @@ library(tidyr)
 #                         header = T)
 
 # Lectura de datos en formato JSON
-Data_pcp <- jsonify::from_json(json = "./Data_json/Serie4EstacionesIlavePrueba.json")
-# cnames <- c("Est1", "Est2", "Est3")
+Data_pcp <- jsonify::from_json(json = "./Data_json/Serie5EstacionesIlave.json")
+# cnames <- c("Est 1", "Est 2", "Est 3")
+# cnames2 <- data.frame()
+# 
+# for (i in 1:length(cnames)) {
+#   cnames2[1,i] <- cnames[i]
+# }
 
 # Funcion de transformacion de datos xts *********************************
 
@@ -231,23 +236,28 @@ tomatrix <- function(Datos_comp){
   }
   
   m4 <- list()
+  # m5 <- list()
 
   for (i in 1:length(colnames(m1))) {
-    
+    i=5
     Data_pcp1 <- m3[[i]]
     
     a <- as.vector(
-      (as.matrix(Data_pcp1[,2:13]))
+      t(as.matrix(Data_pcp1[,2:13]))
     )
+    
     y <- seq.Date(
       as.Date(paste0(Data_pcp1[1, 1], "-01", "-01")),
       as.Date(paste0(Data_pcp1[length(Data_pcp1[, 1]), 1],
                      "-12", "-31" )), by = "month"
     )
+    
     m4[[i]] <- xts::xts(
       x = a,
       order.by = y
-    )
+      )
+    
+    
   }
   
   return(list(m1_a, m2_a, m3, m4))
