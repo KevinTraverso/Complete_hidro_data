@@ -96,12 +96,12 @@ CompletarDatos_cutoff <- function(Datos, PeriodoInicio, PeriodoFin,Metodo, TipoC
   
   # Resultados_mtx <- tomatrix(Datos_comp = Datos_compM)
 
-  png(tf1 <- tempfile(fileext = ".png"), type = "cairo");
-  CDGraficoCorrelacion(Datos_comp = Datos_compM[[3]])
-  dev.off()
+  # png(tf1 <- tempfile(fileext = ".png"), type = "cairo");
+  # CDGraficoCorrelacion(Datos_comp = Datos_compM[[3]])
+  # dev.off()
   # Base64-encode file
 
-  txt <- base64Encode(readBin(tf1, "raw", file.info(tf1)[1, "size"]), "txt")
+  # txt <- base64Encode(readBin(tf1, "raw", file.info(tf1)[1, "size"]), "txt")
 
   #data del gráfico
   # coor_pcp <- corr1(Datos_comp = Datos_compM[[3]])
@@ -150,11 +150,27 @@ CompletarDatos_cutoff <- function(Datos, PeriodoInicio, PeriodoFin,Metodo, TipoC
   #     D.= m1
   #     )
   # }
- 
-  return(list(a,b))
+  
+ # Matriz, de datos solo completados
+    m1 = data.frame(Datos_comp_xts + 0.0001)
+    m2 = data.frame(Datos_xts + 0.0001)
+    
+    c <- na_if(round(m1[,,i] - m2[,,i] %>% mutate_all(funs(replace_na(.,-0.0001))), 2),0.00)
+    
+
+  return(list(a,b, c))
 
 }
   
+
+Datos = datos
+PeriodoInicio = "1995-01-01"
+PeriodoFin = "2008-12-31"
+TipoC = "correlation"
+Metodo = "pearson"
+cutoff_v = 0.75 
+
+
 comp_d <- CompletarDatos_cutoff(Datos = datos, 
                                 PeriodoInicio = "1995-01-01",
                                 PeriodoFin = "2008-12-31",
@@ -163,7 +179,9 @@ comp_d <- CompletarDatos_cutoff(Datos = datos,
                                 cutoff_v = 0.75 )
 
 
-# tomatrix <- function(Datos_comp){
+
+
+tomatrix <- function(Datos_comp){
 
   m1 <- Datos_comp[[2]]
   m2 <- Datos_comp[[3]]
