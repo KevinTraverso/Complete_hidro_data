@@ -122,43 +122,39 @@ CompletarDatos_cutoff <- function(Datos, PeriodoInicio, PeriodoFin,Metodo, TipoC
   #############
   
   # Datos completos
-  a <- list() 
+  # a <- list() 
   
-  for (i in 1:length(Datos_comp_xts[1])) {
-    # i = 1
-    a[[i]] <- data.frame(F.= index(Datos_comp_xts[,i]),
-                         D. = matrix(Datos_comp_xts[,i]))
-  }
-  
-  # Datos incompletos recortados
-  b <- list()
-  
-  for (j in 1:length(Datos_xts[1])) {
-    # i = 1
-    b[[j]] <- data.frame(F.= index(Datos_xts[,j]),
-                         D. = matrix(Datos_xts[,j]))
-  }
-  
-  # c <- list()
-  # 
   # for (i in 1:length(Datos_comp_xts[1])) {
-  #   
-  #   m1 <- na_if(coredata(Datos_comp_xts[,i]-Datos_xts[,i]) %>% mutate_all(funs(replace_na(.,-0.001)))) 
-  #   
-  #   c[[i]] <- data.frame(
-  #     F.= index(Datos_comp_xts[,i]),
-  #     D.= m1
-  #     )
+  #   # i = 1
+  #   a[,i] <- data.frame(F.= index(Datos_comp_xts[,i]),
+  #                        D. = matrix(Datos_comp_xts[,i]))
   # }
   
- # Matriz, de datos solo completados
+  cnames2 <- data.frame()
+  for (i in 1:length(Datos_comp_xts[1])) {
+    cnames2[1,i] <- paste0("E", i)
+  }
+  
+  a <- data.frame(F = index(Datos_comp_xts), coredata(Datos_comp_xts))
+  colnames(a) <- c("F",cnames2)
+  
+  # Datos incompletos recortados
+  # b <- list()
+  # 
+  # for (j in 1:length(Datos_xts[1])) {
+  #   # i = 1
+  #   b[[j]] <- data.frame(F.= index(Datos_xts[,j]),
+  #                        D. = matrix(Datos_xts[,j]))
+  # }
+  
+  b <- data.frame(F = index(Datos_xts), coredata(Datos_xts))
+  
+  # Matriz, de datos solo completados
     m1 = data.frame(Datos_comp_xts + 0.0001)
     m2 = data.frame(Datos_xts + 0.0001)
+    c <- na_if(round(m1 - m2 %>% mutate_all(funs(replace_na(.,-0.0001))), 2),0.00) %>% `rownames<-`( NULL )
     
-    c <- na_if(round(m1[,,i] - m2[,,i] %>% mutate_all(funs(replace_na(.,-0.0001))), 2),0.00)
-    
-
-  return(list(a,b, c))
+  return(list(a,b,c))
 
 }
   
